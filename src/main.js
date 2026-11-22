@@ -11,7 +11,9 @@ document.querySelector('.copyright').textContent = `© ${new Date().getFullYear(
 try {
   const savedTheme = localStorage.getItem('jinova-theme');
   if (savedTheme === 'light' || savedTheme === 'dark') root.dataset.theme = savedTheme;
-} catch { /* Theme remains usable when storage is unavailable. */ }
+} catch {
+  /* Theme remains usable when storage is unavailable. */
+}
 
 function updateThemeControl() {
   const light = root.dataset.theme === 'light';
@@ -27,9 +29,16 @@ themeButton.addEventListener('click', () => {
   root.dataset.theme = root.dataset.theme === 'light' ? 'dark' : 'light';
   root.classList.add('theme-changing');
   clearTimeout(themeButton.themeTimer);
-  themeButton.themeTimer = setTimeout(() => root.classList.remove('theme-changing'), 220);
+  themeButton.themeTimer = setTimeout(
+    () => root.classList.remove('theme-changing'),
+    220,
+  );
   updateThemeControl();
-  try { localStorage.setItem('jinova-theme', root.dataset.theme); } catch { /* Theme remains usable for this session. */ }
+  try {
+    localStorage.setItem('jinova-theme', root.dataset.theme);
+  } catch {
+    /* Theme remains usable for this session. */
+  }
 });
 
 function setMenu(open) {
@@ -83,24 +92,29 @@ const revealItems = document.querySelectorAll('[data-reveal]');
 if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
   revealItems.forEach((item) => item.classList.add('is-visible'));
 } else {
-  const observer = new IntersectionObserver((entries, currentObserver) => entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('is-visible');
-      currentObserver.unobserve(entry.target);
-    }
-  }), { threshold: 0.14, rootMargin: '0px 0px -35px 0px' });
+  const observer = new IntersectionObserver(
+    (entries, currentObserver) => entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        currentObserver.unobserve(entry.target);
+      }
+    }),
+    { threshold: 0.14, rootMargin: '0px 0px -35px 0px' },
+  );
   revealItems.forEach((item) => observer.observe(item));
 }
 
-document.querySelectorAll('.faq-item button').forEach((button) => button.addEventListener('click', () => {
-  const item = button.closest('.faq-item');
-  const open = button.getAttribute('aria-expanded') !== 'true';
-  document.querySelectorAll('.faq-item').forEach((faq) => {
-    faq.classList.toggle('is-open', faq === item && open);
-    faq.querySelector('button').setAttribute('aria-expanded', String(faq === item && open));
-    faq.querySelector('.faq-answer').setAttribute('aria-hidden', String(faq !== item || !open));
+document.querySelectorAll('.faq-item button').forEach((button) => {
+  button.addEventListener('click', () => {
+    const item = button.closest('.faq-item');
+    const open = button.getAttribute('aria-expanded') !== 'true';
+    document.querySelectorAll('.faq-item').forEach((faq) => {
+      faq.classList.toggle('is-open', faq === item && open);
+      faq.querySelector('button').setAttribute('aria-expanded', String(faq === item && open));
+      faq.querySelector('.faq-answer').setAttribute('aria-hidden', String(faq !== item || !open));
+    });
   });
-}));
+});
 
 contactForm.addEventListener('submit', async (event) => {
   event.preventDefault();
