@@ -73,7 +73,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 .word-wrap {
   display: inline-block;
-  overflow: hidden;
+  overflow: clip;
+  overflow-clip-margin: 0.25em;
   vertical-align: bottom;
 }
 .word-inner {
@@ -1038,16 +1039,7 @@ a:hover .arrow-mark {
   transform: translateY(0);
 }
 @media (max-width: 980px) {
-  .word-wrap {
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: bottom;
-}
-.word-inner {
-  display: inline-block;
-  will-change: transform, opacity;
-}
-.page-shell {
+  .page-shell {
     width: min(100% - 64px, 900px);
   }
   .desktop-nav {
@@ -1115,16 +1107,7 @@ a:hover .arrow-mark {
   }
 }
 @media (max-width: 720px) {
-  .word-wrap {
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: bottom;
-}
-.word-inner {
-  display: inline-block;
-  will-change: transform, opacity;
-}
-.page-shell {
+  .page-shell {
     width: calc(100% - 44px);
   }
   .topbar {
@@ -1416,16 +1399,7 @@ a:hover .arrow-mark {
   }
 }
 @media (max-width: 420px) {
-  .word-wrap {
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: bottom;
-}
-.word-inner {
-  display: inline-block;
-  will-change: transform, opacity;
-}
-.page-shell {
+  .page-shell {
     width: calc(100% - 36px);
   }
   .hero-title {
