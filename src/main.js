@@ -1,3 +1,10 @@
+import Lenis from 'lenis';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { animate, inView, hover } from 'motion';
+
+gsap.registerPlugin(ScrollTrigger);
+
 const email = 'rioadrianaaa12@gmail.com';
 const root = document.documentElement;
 const themeButton = document.querySelector('.theme-toggle');
@@ -48,6 +55,22 @@ function setMenu(open) {
   nav.classList.toggle('is-open', open);
 }
 
+const prefersReducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let lenis = null;
+
+if (!prefersReducedMotion) {
+  lenis = new Lenis({
+    duration: 1.15,
+    smoothWheel: true,
+  });
+
+  lenis.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add((time) => {
+    lenis.raf(time * 1000);
+  });
+  gsap.ticker.lagSmoothing(0);
+}
+
 menuButton.addEventListener('click', () => setMenu(menuButton.getAttribute('aria-expanded') !== 'true'));
 document.addEventListener('click', (event) => {
   const anchor = event.target.closest('a[href^="#"]');
@@ -58,7 +81,11 @@ document.addEventListener('click', (event) => {
   if (!target) return;
   event.preventDefault();
   if (location.hash !== href) history.pushState(null, '', href);
-  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (lenis) {
+    lenis.scrollTo(target);
+  } else {
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
   if (nav.classList.contains('is-open')) setMenu(false);
 });
 
@@ -102,6 +129,91 @@ if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObs
     { threshold: 0.14, rootMargin: '0px 0px -35px 0px' },
   );
   revealItems.forEach((item) => observer.observe(item));
+}
+
+function splitTextIntoWords(element) {
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+  const textNodes = [];
+  let node;
+  while ((node = walker.nextNode())) {
+    if (node.textContent.trim()) textNodes.push(node);
+  }
+
+  textNodes.forEach((textNode) => {
+    const fragment = document.createDocumentFragment();
+    const parts = textNode.textContent.split(/(\s+)/);
+    parts.forEach((part) => {
+      if (!part) return;
+      if (/^\s+$/.test(part)) {
+        fragment.appendChild(document.createTextNode(part));
+      } else {
+        const wrap = document.createElement('span');
+        wrap.className = 'word-wrap';
+        const inner = document.createElement('span');
+        inner.className = 'word-inner';
+        inner.textContent = part;
+        wrap.appendChild(inner);
+        fragment.appendChild(wrap);
+      }
+    });
+    textNode.parentNode.replaceChild(fragment, textNode);
+  });
+
+  return element.querySelectorAll('.word-inner');
+}
+
+if (!prefersReducedMotion) {
+  const heroTitle = document.querySelector('.hero-title');
+  if (heroTitle) {
+    const heroWords = splitTextIntoWords(heroTitle);
+    gsap.from(heroWords, {
+      yPercent: 100,
+      opacity: 0,
+      duration: 0.75,
+      stagger: 0.06,
+      ease: 'power3.out',
+      clearProps: 'transform,opacity',
+    });
+  }
+
+  document.querySelectorAll('main h2').forEach((heading) => {
+    const words = splitTextIntoWords(heading);
+    if (!words.length) return;
+    gsap.from(words, {
+      yPercent: 100,
+      opacity: 0,
+      duration: 0.7,
+      stagger: 0.05,
+      ease: 'power3.out',
+      clearProps: 'transform,opacity',
+      scrollTrigger: {
+        trigger: heading,
+        start: 'top 85%',
+        once: true,
+      },
+    });
+  });
+
+  const cards = document.querySelectorAll('.service-row, .work-card, .process-step, .tech-card, .studio-card, .faq-item');
+  cards.forEach((card, index) => {
+    card.style.opacity = '0';
+    inView(
+      card,
+      () => {
+        animate(
+          card,
+          { opacity: [0, 1], y: [24, 0] },
+          { duration: 0.55, delay: (index % 4) * 0.06, easing: [0.22, 1, 0.36, 1] },
+        );
+      },
+      { amount: 0.15 },
+    );
+
+    hover(card, (element) => {
+      animate(element, { y: -4, scale: 1.01 }, { duration: 0.22, easing: 'ease-out' });
+      return () => animate(element, { y: 0, scale: 1 }, { duration: 0.22, easing: 'ease-out' });
+    });
+  });
 }
 
 document.querySelectorAll('.faq-item button').forEach((button) => {
